@@ -311,7 +311,7 @@ public class ChartGenerator {
         html = html.replace("__DATA__", data.toString());
 
         Path output = Path.of(
-                "results", "dashboard.html");
+                "results", "index.html");
 
         Files.writeString(output, html);
 
