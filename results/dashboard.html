@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width,initial-scale=1">
+<title>MergeSort Lab Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: #0b1220;
+    color: #edf2fa;
+    font-family: Arial, sans-serif;
+  }
+  .container {
+    max-width: 1150px;
+    margin: auto;
+    padding: 36px 22px;
+  }
+  h1 { margin-bottom: 4px; font-size: 34px; }
+  .sub { color: #94a3b8; }
+  .panel, .metric {
+    background: #172235;
+    border: 1px solid #29394e;
+    border-radius: 16px;
+    padding: 22px;
+  }
+  .panel { margin-top: 24px; }
+  .filters, .metrics {
+    display: grid;
+    gap: 16px;
+    margin-top: 25px;
+  }
+  .filters { grid-template-columns: repeat(2,1fr); }
+  .metrics { grid-template-columns: repeat(3,1fr); }
+  label {
+    display: block;
+    color: #94a3b8;
+    margin-bottom: 10px;
+  }
+  select {
+    width: 100%;
+    padding: 12px;
+    background: #0b1220;
+    color: white;
+    border: 1px solid #475569;
+    border-radius: 9px;
+  }
+  .metric span { color: #94a3b8; }
+  .metric h2 {
+    margin: 14px 0 0;
+    color: #38bdf8;
+    font-size: 30px;
+  }
+  .chartbox { height: 380px; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 18px;
+  }
+  th, td {
+    padding: 13px;
+    border-bottom: 1px solid #29394e;
+    text-align: left;
+  }
+  th { color: #94a3b8; }
+  .best { color: #4ade80; font-weight: bold; }
+  .scroll { overflow-x: auto; }
+  @media(max-width:650px) {
+    .metrics, .filters { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+
+<body>
+<div class="container">
+  <h1>MergeSort Lab</h1>
+  <p class="sub">
+    Finding the Optimal Cutoff — Experimental Dashboard
+  </p>
+
+  <div class="filters">
+    <div>
+      <label>Dataset Type</label>
+      <select id="type"></select>
+    </div>
+    <div>
+      <label>Array Size</label>
+      <select id="size"></select>
+    </div>
+  </div>
+
+  <div class="metrics">
+    <div class="metric">
+      <span>Best CUTOFF</span>
+      <h2 id="best">--</h2>
+    </div>
+    <div class="metric">
+      <span>Median Runtime</span>
+      <h2 id="runtime">--</h2>
+    </div>
+    <div class="metric">
+      <span>Time Reduction vs Pure MergeSort</span>
+      <h2 id="improvement">--</h2>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Cutoff Performance</h2>
+    <p class="sub">Lower runtime is better</p>
+    <div class="chartbox">
+      <canvas id="chart"></canvas>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Detailed Results</h2>
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>CUTOFF</th>
+            <th>Mean (ms)</th>
+            <th>Median (ms)</th>
+            <th>Std Dev (ms)</th>
+          </tr>
+        </thead>
+        <tbody id="table"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Experiment Notes</h2>
+    <p class="sub">
+      Results from Java MergeSort with Insertion Sort cutoff.
+      Each configuration uses repeated measurements.
+      Best cutoff is selected by lowest median runtime.
+      All results depend on the dataset and machine.
+    </p>
+  </div>
+</div>
+
+<script>
+const records = [{"type":"RANDOM","size":10000,"cutoff":0,"avg":0.955765,"median":0.99515,"std":0.124403},{"type":"RANDOM","size":10000,"cutoff":2,"avg":0.952505,"median":0.97675,"std":0.092216},{"type":"RANDOM","size":10000,"cutoff":4,"avg":0.871155,"median":0.8906,"std":0.089269},{"type":"RANDOM","size":10000,"cutoff":7,"avg":0.817005,"median":0.8349,"std":0.090547},{"type":"RANDOM","size":10000,"cutoff":10,"avg":0.75896,"median":0.766,"std":0.062997},{"type":"RANDOM","size":10000,"cutoff":12,"avg":0.72428,"median":0.72265,"std":0.068726},{"type":"RANDOM","size":10000,"cutoff":16,"avg":0.770185,"median":0.74,"std":0.169252},{"type":"RANDOM","size":10000,"cutoff":24,"avg":0.70177,"median":0.7028,"std":0.07407},{"type":"RANDOM","size":10000,"cutoff":32,"avg":0.68622,"median":0.67165,"std":0.067895},{"type":"RANDOM","size":10000,"cutoff":48,"avg":0.73343,"median":0.7469,"std":0.091709},{"type":"RANDOM","size":10000,"cutoff":64,"avg":0.710995,"median":0.7125,"std":0.082645},{"type":"RANDOM","size":100000,"cutoff":0,"avg":10.334035,"median":9.8138,"std":2.241587},{"type":"RANDOM","size":100000,"cutoff":2,"avg":9.92705,"median":9.55485,"std":1.92896},{"type":"RANDOM","size":100000,"cutoff":4,"avg":9.56924,"median":8.58785,"std":3.508368},{"type":"RANDOM","size":100000,"cutoff":7,"avg":8.843135,"median":8.42495,"std":1.334825},{"type":"RANDOM","size":100000,"cutoff":10,"avg":8.8689,"median":8.0778,"std":1.833853},{"type":"RANDOM","size":100000,"cutoff":12,"avg":8.309325,"median":7.94475,"std":1.255235},{"type":"RANDOM","size":100000,"cutoff":16,"avg":8.6424,"median":8.22545,"std":1.479017},{"type":"RANDOM","size":100000,"cutoff":24,"avg":7.919605,"median":7.45425,"std":1.223882},{"type":"RANDOM","size":100000,"cutoff":32,"avg":7.808445,"median":7.59915,"std":0.953295},{"type":"RANDOM","size":100000,"cutoff":48,"avg":8.22351,"median":7.1203,"std":3.801821},{"type":"RANDOM","size":100000,"cutoff":64,"avg":7.813965,"median":7.42795,"std":1.395041},{"type":"RANDOM","size":500000,"cutoff":0,"avg":67.23761,"median":64.9965,"std":22.675018},{"type":"RANDOM","size":500000,"cutoff":2,"avg":57.97909,"median":50.3934,"std":12.730655},{"type":"RANDOM","size":500000,"cutoff":4,"avg":61.041745,"median":63.7836,"std":13.34747},{"type":"RANDOM","size":500000,"cutoff":7,"avg":58.52617,"median":56.6871,"std":17.882303},{"type":"RANDOM","size":500000,"cutoff":10,"avg":56.776005,"median":64.3545,"std":13.466531},{"type":"RANDOM","size":500000,"cutoff":12,"avg":56.04686,"median":63.1455,"std":12.801479},{"type":"RANDOM","size":500000,"cutoff":16,"avg":52.38208,"median":50.4497,"std":9.439929},{"type":"RANDOM","size":500000,"cutoff":24,"avg":52.238225,"median":52.6007,"std":11.093535},{"type":"RANDOM","size":500000,"cutoff":32,"avg":52.59136,"median":58.6283,"std":11.417985},{"type":"RANDOM","size":500000,"cutoff":48,"avg":52.019955,"median":57.08645,"std":10.645469},{"type":"RANDOM","size":500000,"cutoff":64,"avg":49.01248,"median":46.4381,"std":9.931406},{"type":"SORTED","size":10000,"cutoff":0,"avg":0.404545,"median":0.3951,"std":0.038461},{"type":"SORTED","size":10000,"cutoff":2,"avg":0.392555,"median":0.3542,"std":0.146011},{"type":"SORTED","size":10000,"cutoff":4,"avg":0.325985,"median":0.3242,"std":0.044358},{"type":"SORTED","size":10000,"cutoff":7,"avg":0.271625,"median":0.2749,"std":0.023307},{"type":"SORTED","size":10000,"cutoff":10,"avg":0.254605,"median":0.24465,"std":0.041972},{"type":"SORTED","size":10000,"cutoff":12,"avg":0.24662,"median":0.2448,"std":0.034445},{"type":"SORTED","size":10000,"cutoff":16,"avg":0.24678,"median":0.24485,"std":0.00735},{"type":"SORTED","size":10000,"cutoff":24,"avg":0.231505,"median":0.2224,"std":0.061874},{"type":"SORTED","size":10000,"cutoff":32,"avg":0.22384,"median":0.2215,"std":0.025543},{"type":"SORTED","size":10000,"cutoff":48,"avg":0.196535,"median":0.1956,"std":0.003866},{"type":"SORTED","size":10000,"cutoff":64,"avg":0.199655,"median":0.19495,"std":0.017996},{"type":"SORTED","size":100000,"cutoff":0,"avg":4.654895,"median":4.6403,"std":0.599231},{"type":"SORTED","size":100000,"cutoff":2,"avg":4.479915,"median":4.3865,"std":0.249996},{"type":"SORTED","size":100000,"cutoff":4,"avg":3.942225,"median":3.8094,"std":0.302921},{"type":"SORTED","size":100000,"cutoff":7,"avg":3.382935,"median":3.3574,"std":0.336723},{"type":"SORTED","size":100000,"cutoff":10,"avg":3.38161,"median":3.3628,"std":0.266893},{"type":"SORTED","size":100000,"cutoff":12,"avg":3.336305,"median":3.1676,"std":0.385675},{"type":"SORTED","size":100000,"cutoff":16,"avg":3.236785,"median":3.0746,"std":0.301808},{"type":"SORTED","size":100000,"cutoff":24,"avg":2.92636,"median":2.9361,"std":0.236704},{"type":"SORTED","size":100000,"cutoff":32,"avg":2.782095,"median":2.82545,"std":0.280995},{"type":"SORTED","size":100000,"cutoff":48,"avg":2.88134,"median":2.79435,"std":0.341558},{"type":"SORTED","size":100000,"cutoff":64,"avg":2.63974,"median":2.57705,"std":0.194999},{"type":"SORTED","size":500000,"cutoff":0,"avg":33.14655,"median":18.77925,"std":30.146537},{"type":"SORTED","size":500000,"cutoff":2,"avg":22.358075,"median":15.88615,"std":11.399685},{"type":"SORTED","size":500000,"cutoff":4,"avg":20.90606,"median":14.7477,"std":10.884819},{"type":"SORTED","size":500000,"cutoff":7,"avg":21.51112,"median":14.21845,"std":14.463038},{"type":"SORTED","size":500000,"cutoff":10,"avg":23.79287,"median":13.0548,"std":18.193678},{"type":"SORTED","size":500000,"cutoff":12,"avg":24.13136,"median":13.59595,"std":20.378514},{"type":"SORTED","size":500000,"cutoff":16,"avg":22.89685,"median":12.3243,"std":28.30559},{"type":"SORTED","size":500000,"cutoff":24,"avg":16.712425,"median":12.1048,"std":8.899442},{"type":"SORTED","size":500000,"cutoff":32,"avg":17.37071,"median":10.8154,"std":13.913059},{"type":"SORTED","size":500000,"cutoff":48,"avg":15.23699,"median":10.68685,"std":8.129218},{"type":"SORTED","size":500000,"cutoff":64,"avg":15.672215,"median":11.7429,"std":8.316857},{"type":"REVERSED","size":10000,"cutoff":0,"avg":3.18155,"median":0.78915,"std":11.116285},{"type":"REVERSED","size":10000,"cutoff":2,"avg":0.62927,"median":0.68645,"std":0.225419},{"type":"REVERSED","size":10000,"cutoff":4,"avg":2.36784,"median":0.55595,"std":8.189126},{"type":"REVERSED","size":10000,"cutoff":7,"avg":0.53091,"median":0.55485,"std":0.175008},{"type":"REVERSED","size":10000,"cutoff":10,"avg":0.50808,"median":0.5229,"std":0.207827},{"type":"REVERSED","size":10000,"cutoff":12,"avg":0.5908,"median":0.55685,"std":0.340758},{"type":"REVERSED","size":10000,"cutoff":16,"avg":0.565805,"median":0.5417,"std":0.265219},{"type":"REVERSED","size":10000,"cutoff":24,"avg":0.578355,"median":0.5423,"std":0.284186},{"type":"REVERSED","size":10000,"cutoff":32,"avg":0.63056,"median":0.5791,"std":0.255906},{"type":"REVERSED","size":10000,"cutoff":48,"avg":0.65191,"median":0.6912,"std":0.32236},{"type":"REVERSED","size":10000,"cutoff":64,"avg":0.691005,"median":0.69375,"std":0.433207},{"type":"REVERSED","size":100000,"cutoff":0,"avg":5.455855,"median":4.74765,"std":1.6298},{"type":"REVERSED","size":100000,"cutoff":2,"avg":4.78475,"median":4.3718,"std":1.357834},{"type":"REVERSED","size":100000,"cutoff":4,"avg":4.173595,"median":3.8617,"std":0.726518},{"type":"REVERSED","size":100000,"cutoff":7,"avg":3.990695,"median":3.627,"std":1.109272},{"type":"REVERSED","size":100000,"cutoff":10,"avg":4.09102,"median":3.59715,"std":1.269618},{"type":"REVERSED","size":100000,"cutoff":12,"avg":4.105805,"median":3.6003,"std":1.178972},{"type":"REVERSED","size":100000,"cutoff":16,"avg":4.07766,"median":3.6138,"std":0.967994},{"type":"REVERSED","size":100000,"cutoff":24,"avg":4.336635,"median":3.90635,"std":1.220182},{"type":"REVERSED","size":100000,"cutoff":32,"avg":4.67245,"median":4.1132,"std":1.311456},{"type":"REVERSED","size":100000,"cutoff":48,"avg":4.74045,"median":4.3307,"std":0.846033},{"type":"REVERSED","size":100000,"cutoff":64,"avg":5.69105,"median":5.32495,"std":1.132621},{"type":"REVERSED","size":500000,"cutoff":0,"avg":23.628495,"median":20.7168,"std":8.441321},{"type":"REVERSED","size":500000,"cutoff":2,"avg":21.127645,"median":16.9615,"std":8.624393},{"type":"REVERSED","size":500000,"cutoff":4,"avg":18.335865,"median":15.65145,"std":5.512159},{"type":"REVERSED","size":500000,"cutoff":7,"avg":17.4891,"median":15.2999,"std":4.541032},{"type":"REVERSED","size":500000,"cutoff":10,"avg":16.790705,"median":14.91285,"std":3.942122},{"type":"REVERSED","size":500000,"cutoff":12,"avg":17.84503,"median":16.0958,"std":5.522572},{"type":"REVERSED","size":500000,"cutoff":16,"avg":19.017905,"median":14.17785,"std":7.559227},{"type":"REVERSED","size":500000,"cutoff":24,"avg":18.515805,"median":16.8356,"std":6.220651},{"type":"REVERSED","size":500000,"cutoff":32,"avg":21.49398,"median":18.4016,"std":7.288376},{"type":"REVERSED","size":500000,"cutoff":48,"avg":20.76688,"median":18.07915,"std":6.340213},{"type":"REVERSED","size":500000,"cutoff":64,"avg":27.358395,"median":23.60935,"std":8.962456},{"type":"NEARLY_SORTED","size":10000,"cutoff":0,"avg":0.313685,"median":0.2757,"std":0.061779},{"type":"NEARLY_SORTED","size":10000,"cutoff":2,"avg":0.284305,"median":0.25255,"std":0.056386},{"type":"NEARLY_SORTED","size":10000,"cutoff":4,"avg":0.26085,"median":0.2338,"std":0.049488},{"type":"NEARLY_SORTED","size":10000,"cutoff":7,"avg":0.22489,"median":0.20135,"std":0.044395},{"type":"NEARLY_SORTED","size":10000,"cutoff":10,"avg":0.19479,"median":0.1801,"std":0.032266},{"type":"NEARLY_SORTED","size":10000,"cutoff":12,"avg":0.20269,"median":0.1787,"std":0.043405},{"type":"NEARLY_SORTED","size":10000,"cutoff":16,"avg":0.19437,"median":0.1788,"std":0.030602},{"type":"NEARLY_SORTED","size":10000,"cutoff":24,"avg":0.17821,"median":0.16335,"std":0.027332},{"type":"NEARLY_SORTED","size":10000,"cutoff":32,"avg":0.18655,"median":0.1638,"std":0.050815},{"type":"NEARLY_SORTED","size":10000,"cutoff":48,"avg":0.17106,"median":0.14705,"std":0.066506},{"type":"NEARLY_SORTED","size":10000,"cutoff":64,"avg":0.16672,"median":0.14785,"std":0.044671},{"type":"NEARLY_SORTED","size":100000,"cutoff":0,"avg":3.71832,"median":3.54675,"std":0.474652},{"type":"NEARLY_SORTED","size":100000,"cutoff":2,"avg":3.401235,"median":3.2643,"std":0.473996},{"type":"NEARLY_SORTED","size":100000,"cutoff":4,"avg":2.99861,"median":2.84335,"std":0.439315},{"type":"NEARLY_SORTED","size":100000,"cutoff":7,"avg":2.818375,"median":2.5652,"std":0.509168},{"type":"NEARLY_SORTED","size":100000,"cutoff":10,"avg":2.82847,"median":2.70445,"std":0.356908},{"type":"NEARLY_SORTED","size":100000,"cutoff":12,"avg":2.714445,"median":2.4686,"std":0.447699},{"type":"NEARLY_SORTED","size":100000,"cutoff":16,"avg":2.671935,"median":2.45675,"std":0.505545},{"type":"NEARLY_SORTED","size":100000,"cutoff":24,"avg":2.49612,"median":2.29515,"std":0.445083},{"type":"NEARLY_SORTED","size":100000,"cutoff":32,"avg":2.36272,"median":2.1833,"std":0.658595},{"type":"NEARLY_SORTED","size":100000,"cutoff":48,"avg":2.27197,"median":2.177,"std":0.21034},{"type":"NEARLY_SORTED","size":100000,"cutoff":64,"avg":2.17365,"median":2.08175,"std":0.318937},{"type":"NEARLY_SORTED","size":500000,"cutoff":0,"avg":20.546395,"median":20.66445,"std":1.966705},{"type":"NEARLY_SORTED","size":500000,"cutoff":2,"avg":19.00666,"median":18.15455,"std":1.952},{"type":"NEARLY_SORTED","size":500000,"cutoff":4,"avg":16.734595,"median":16.1429,"std":1.464221},{"type":"NEARLY_SORTED","size":500000,"cutoff":7,"avg":16.38048,"median":16.1014,"std":1.076087},{"type":"NEARLY_SORTED","size":500000,"cutoff":10,"avg":15.677295,"median":15.00365,"std":1.945991},{"type":"NEARLY_SORTED","size":500000,"cutoff":12,"avg":15.66076,"median":15.0089,"std":1.641962},{"type":"NEARLY_SORTED","size":500000,"cutoff":16,"avg":14.48234,"median":14.30645,"std":1.54358},{"type":"NEARLY_SORTED","size":500000,"cutoff":24,"avg":14.071775,"median":13.7087,"std":1.229023},{"type":"NEARLY_SORTED","size":500000,"cutoff":32,"avg":13.91114,"median":13.64395,"std":1.411427},{"type":"NEARLY_SORTED","size":500000,"cutoff":48,"avg":13.234295,"median":12.9717,"std":0.934311},{"type":"NEARLY_SORTED","size":500000,"cutoff":64,"avg":12.46992,"median":12.2121,"std":0.736065},{"type":"MANY_DUPLICATES","size":10000,"cutoff":0,"avg":0.52234,"median":0.46265,"std":0.10849},{"type":"MANY_DUPLICATES","size":10000,"cutoff":2,"avg":0.452165,"median":0.4315,"std":0.067955},{"type":"MANY_DUPLICATES","size":10000,"cutoff":4,"avg":0.4751,"median":0.41325,"std":0.192649},{"type":"MANY_DUPLICATES","size":10000,"cutoff":7,"avg":0.41812,"median":0.37465,"std":0.11913},{"type":"MANY_DUPLICATES","size":10000,"cutoff":10,"avg":0.359375,"median":0.33265,"std":0.049065},{"type":"MANY_DUPLICATES","size":10000,"cutoff":12,"avg":0.35646,"median":0.334,"std":0.047588},{"type":"MANY_DUPLICATES","size":10000,"cutoff":16,"avg":0.359555,"median":0.3312,"std":0.072311},{"type":"MANY_DUPLICATES","size":10000,"cutoff":24,"avg":0.315005,"median":0.30355,"std":0.032763},{"type":"MANY_DUPLICATES","size":10000,"cutoff":32,"avg":0.33832,"median":0.29825,"std":0.100228},{"type":"MANY_DUPLICATES","size":10000,"cutoff":48,"avg":0.32108,"median":0.28885,"std":0.122139},{"type":"MANY_DUPLICATES","size":10000,"cutoff":64,"avg":0.30299,"median":0.29175,"std":0.026524},{"type":"MANY_DUPLICATES","size":100000,"cutoff":0,"avg":8.410555,"median":8.12305,"std":0.923269},{"type":"MANY_DUPLICATES","size":100000,"cutoff":2,"avg":8.25952,"median":7.6347,"std":1.439187},{"type":"MANY_DUPLICATES","size":100000,"cutoff":4,"avg":7.72419,"median":7.2754,"std":1.202783},{"type":"MANY_DUPLICATES","size":100000,"cutoff":7,"avg":6.833185,"median":6.40315,"std":1.064395},{"type":"MANY_DUPLICATES","size":100000,"cutoff":10,"avg":7.01741,"median":6.70745,"std":1.022693},{"type":"MANY_DUPLICATES","size":100000,"cutoff":12,"avg":6.49581,"median":6.0325,"std":1.278153},{"type":"MANY_DUPLICATES","size":100000,"cutoff":16,"avg":6.089015,"median":5.643,"std":0.939867},{"type":"MANY_DUPLICATES","size":100000,"cutoff":24,"avg":5.81497,"median":5.3985,"std":1.006431},{"type":"MANY_DUPLICATES","size":100000,"cutoff":32,"avg":5.897965,"median":5.55555,"std":1.096231},{"type":"MANY_DUPLICATES","size":100000,"cutoff":48,"avg":5.50385,"median":5.20955,"std":0.528458},{"type":"MANY_DUPLICATES","size":100000,"cutoff":64,"avg":6.04756,"median":5.3043,"std":1.967393},{"type":"MANY_DUPLICATES","size":500000,"cutoff":0,"avg":39.622935,"median":42.52725,"std":7.184008},{"type":"MANY_DUPLICATES","size":500000,"cutoff":2,"avg":38.389075,"median":40.2593,"std":8.192936},{"type":"MANY_DUPLICATES","size":500000,"cutoff":4,"avg":34.623345,"median":37.0729,"std":6.280836},{"type":"MANY_DUPLICATES","size":500000,"cutoff":7,"avg":33.32887,"median":36.4078,"std":5.851852},{"type":"MANY_DUPLICATES","size":500000,"cutoff":10,"avg":32.298025,"median":34.7093,"std":5.703516},{"type":"MANY_DUPLICATES","size":500000,"cutoff":12,"avg":32.934165,"median":34.34485,"std":6.717694},{"type":"MANY_DUPLICATES","size":500000,"cutoff":16,"avg":28.62118,"median":29.78075,"std":5.503841},{"type":"MANY_DUPLICATES","size":500000,"cutoff":24,"avg":28.640705,"median":31.3012,"std":6.439534},{"type":"MANY_DUPLICATES","size":500000,"cutoff":32,"avg":28.38411,"median":30.64415,"std":5.23436},{"type":"MANY_DUPLICATES","size":500000,"cutoff":48,"avg":27.62015,"median":29.4688,"std":4.886704},{"type":"MANY_DUPLICATES","size":500000,"cutoff":64,"avg":27.480685,"median":30.0494,"std":4.727767}];
+const typeSelect = document.getElementById("type");
+const sizeSelect = document.getElementById("size");
+
+const types = [...new Set(records.map(x => x.type))];
+const sizes = [...new Set(records.map(x => x.size))]
+                .sort((a,b) => a-b);
+
+types.forEach(x => typeSelect.add(new Option(x,x)));
+sizes.forEach(x =>
+  sizeSelect.add(new Option(x.toLocaleString(),x))
+);
+
+typeSelect.value = types.includes("RANDOM")
+  ? "RANDOM" : types[0];
+
+sizeSelect.value = sizes.includes(100000)
+  ? "100000" : String(sizes[0]);
+
+let chart = null;
+
+function update() {
+  const rows = records.filter(x =>
+    x.type === typeSelect.value &&
+    x.size === Number(sizeSelect.value)
+  ).sort((a,b) => a.cutoff-b.cutoff);
+
+  if (!rows.length) return;
+
+  const best = rows.reduce((a,b) =>
+    b.median < a.median ? b : a
+  );
+
+  const baseline = rows.find(x => x.cutoff === 0);
+
+  const improvement = baseline && baseline.median > 0
+    ? (baseline.median-best.median)
+        / baseline.median*100 : 0;
+
+  document.getElementById("best").textContent =
+    best.cutoff;
+
+  document.getElementById("runtime").textContent =
+    best.median.toFixed(3)+" ms";
+
+  document.getElementById("improvement").textContent =
+    improvement.toFixed(2)+"%";
+
+  document.getElementById("table").innerHTML =
+    rows.map(x => `
+      <tr class="${x.cutoff===best.cutoff?'best':''}">
+        <td>${x.cutoff}</td>
+        <td>${x.avg.toFixed(3)}</td>
+        <td>${x.median.toFixed(3)}</td>
+        <td>${x.std.toFixed(3)}</td>
+      </tr>
+    `).join("");
+
+  if (chart) chart.destroy();
+
+  chart = new Chart(
+    document.getElementById("chart"), {
+      type: "line",
+      data: {
+        labels: rows.map(x => x.cutoff),
+        datasets: [{
+          label: "Median Runtime (ms)",
+          data: rows.map(x => x.median),
+          borderColor: "#38bdf8",
+          backgroundColor: "#38bdf8",
+          tension: 0.2,
+          pointRadius: 5
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: {color:"#edf2fa"} }
+        },
+        scales: {
+          x: {
+            ticks: {color:"#94a3b8"},
+            grid: {color:"#29394e"},
+            title: {
+              display:true,
+              text:"CUTOFF",
+              color:"#edf2fa"
+            }
+          },
+          y: {
+            ticks: {color:"#94a3b8"},
+            grid: {color:"#29394e"},
+            title: {
+              display:true,
+              text:"Runtime (ms)",
+              color:"#edf2fa"
+            }
+          }
+        }
+      }
+    }
+  );
+}
+
+typeSelect.addEventListener("change",update);
+sizeSelect.addEventListener("change",update);
+
+update();
+</script>
+</body>
+</html>
