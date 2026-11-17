@@ -1,4 +1,8 @@
+## Live Dashboard
 
+Explore the interactive experiment results:
+
+https://hoangthaibao.github.io/MergeSort-Lab/
 # MergeSort Lab
 ### Finding the Optimal Cutoff for Merge Sort
 
@@ -98,8 +102,3 @@ Course lecture: 22Mergesort.pdf.
 
 Hoang Thai Bao
 University of Engineering and Technology - VNU
-## Live Dashboard
-
-Explore the interactive experiment results:
-
-https://hoangthaibao.github.io/MergeSort-Lab/
